@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Gradient Cube (Lab4)</title>
+    <style>
+        /* 全局样式：让立方体居中显示 */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f0f0;
+            margin: 0;
+            perspective: 1000px; /* 3D透视效果，让立方体更立体 */
+        }
+
+        /* 立方体容器：控制整体3D视角 */
+        .cube {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            transform-style: preserve-3d; /* 保留3D变换，核心属性 */
+            transform: rotateX(30deg) rotateY(45deg); /* 初始旋转角度，方便观察 */
+            transition: transform 2s ease; /* 旋转动画，可选 */
+        }
+
+        /* 立方体6个面的通用样式 */
+        .cube-face {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border: 2px solid #333; /* 边框，区分面 */
+            opacity: 0.9; /* 半透明，方便看3D结构 */
+        }
+
+        /* 1. 前面（Front）：用linear-gradient做渐变，题目要求的属性 */
+        .front {
+            background: linear-gradient(45deg, #ff6b6b, #feca57); /* 红到黄的渐变 */
+            transform: translateZ(100px); /* 沿Z轴向前移动100px（立方体边长的一半） */
+        }
+
+        /* 2. 后面（Back） */
+        .back {
+            background: linear-gradient(45deg, #48dbfb, #0abde3); /* 蓝到青的渐变 */
+            transform: rotateY(180deg) translateZ(100px);
+        }
+
+        /* 3. 右面（Right）：用skewX/Y变形，题目要求的属性 */
+        .right {
+            background: linear-gradient(45deg, #ff9ff3, #f368e0); /* 粉到紫的渐变 */
+            transform: rotateY(90deg) skewX(0deg) translateZ(100px);
+        }
+
+        /* 4. 左面（Left） */
+        .left {
+            background: linear-gradient(45deg, #54a0ff, #5f27cd); /* 深蓝到紫的渐变 */
+            transform: rotateY(-90deg) skewX(0deg) translateZ(100px);
+        }
+
+        /* 5. 上面（Top）：用skewY变形，题目要求的属性 */
+        .top {
+            background: linear-gradient(45deg, #00d2d3, #01a3a4); /* 青到深青的渐变 */
+            transform: rotateX(90deg) skewY(0deg) translateZ(100px);
+        }
+
+        /* 6. 下面（Bottom） */
+        .bottom {
+            background: linear-gradient(45deg, #ff7675, #d63031); /* 浅红到深红的渐变 */
+            transform: rotateX(-90deg) skewY(0deg) translateZ(100px);
+        }
+
+        /* 可选：鼠标悬停旋转立方体，效果更酷 */
+        .cube:hover {
+            transform: rotateX(30deg) rotateY(405deg); /* 旋转一圈 */
+        }
+    </style>
+</head>
+<body>
+    <!-- 立方体容器 -->
+    <div class="cube">
+        <!-- 6个面，对应CSS的6个类 -->
+        <div class="cube-face front"></div>
+        <div class="cube-face back"></div>
+        <div class="cube-face right"></div>
+        <div class="cube-face left"></div>
+        <div class="cube-face top"></div>
+        <div class="cube-face bottom"></div>
+    </div>
+</body>
+</html>
