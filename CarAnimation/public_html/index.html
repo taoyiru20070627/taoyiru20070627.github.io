@@ -13,14 +13,14 @@
             overflow: hidden;
         }
 
-        /* 小汽车图片的样式 + 动画 */
+        /* 小汽车图片样式 + 动画 */
         .car {
             position: absolute;
             bottom: 50px;
             left: -300px; /* 初始位置：屏幕左侧外面 */
             /* 动画设置：8秒匀速循环，从左开到右 */
             animation: drive 8s linear infinite;
-            /* 调整图片大小，根据你的car.jpg改，不合适再调 */
+            /* 调整图片大小，根据你的car.jpeg改，不合适再调 */
             width: 200px;
             height: auto;
         }
@@ -38,8 +38,8 @@
 </head>
 <body>
     <div class="road">
-        <!-- 这里引用你拖进去的car.jpg，文件名必须完全一致！ -->
-        < img src="car.jpg" alt="Moving Car" class="car">
+        <!-- 重点修改：这里已经改为 car.jpeg -->
+        < img src="car.jpeg" alt="Moving Car" class="car">
     </div>
 </body>
 </html>
