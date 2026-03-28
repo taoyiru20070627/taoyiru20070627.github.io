@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Animated Moving Car</title>
     <style>
+        /* 动画容器，必须完整 */
         .road {
             width: 100%;
             height: 300px;
@@ -11,6 +12,8 @@
             position: relative;
             overflow: hidden;
         }
+
+        /* 小汽车样式+动画，类名和HTML完全一致 */
         .car {
             position: absolute;
             bottom: 50px;
@@ -19,14 +22,21 @@
             width: 200px;
             height: auto;
         }
+
+        /* 动画关键帧，无任何语法错误 */
         @keyframes drive {
-            0% { left: -300px; }
-            100% { left: 100%; }
+            0% {
+                left: -300px;
+            }
+            100% {
+                left: 100%;
+            }
         }
     </style>
 </head>
 <body>
     <div class="road">
+        <!-- 完全匹配你带点的文件名 car.jpeg -->
         < img src="car.jpeg" alt="Moving Car" class="car">
     </div>
 </body>
