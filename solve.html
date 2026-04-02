@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Quadratic Solver</title>
+</head>
+<body>
+    <script>
+        // 步骤1：获取用户输入
+        let a = parseFloat(prompt("请输入系数 a："));
+        let b = parseFloat(prompt("请输入系数 b："));
+        let c = parseFloat(prompt("请输入系数 c："));
+
+        // 步骤2：计算判别式
+        let delta = b * b - 4 * a * c;
+
+        // 步骤3：计算两个根
+        let x1 = (-b + Math.sqrt(delta)) / (2 * a);
+        let x2 = (-b - Math.sqrt(delta)) / (2 * a);
+
+        // 步骤4：弹窗显示结果
+        alert("计算结果：\nx1 = " + x1 + "\nx2 = " + x2);
+
+        // 步骤5：在控制台打印结果（按F12查看）
+        console.log("x1 =", x1);
+        console.log("x2 =", x2);
+    </script>
+</body>
+</html>
