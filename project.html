@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>汉诺塔 终极整合版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #87CEEB, #9370DB);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #fff;
+            text-shadow: 2px 2px 8px #0005;
+            margin-bottom: 20px;
+        }
+        .control-box {
+            background: #fff8;
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button, select {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .info {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .game-container {
+            perspective: 1200px;
+        }
+        .tower-wrap {
+            width: 750px;
+            height: 420px;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(18deg);
+        }
+        .click-zone {
+            width: 240px;
+            height: 350px;
+            position: absolute;
+            bottom: 40px;
+            cursor: pointer;
+        }
+        .z0 { left: 0%; }
+        .z1 { left: 38%; }
+        .z2 { left: 76%; }
+
+        /* 柱子渐变+顶部高光 */
+        .peg {
+            width: 20px;
+            height: 270px;
+            position: absolute;
+            bottom: 60px;
+            border-radius: 6px;
+            transform: translateX(-50%);
+            background: linear-gradient(to bottom, #f5f5f5 0%, #777 30%, #222 100%);
+        }
+        .peg::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 28px;
+            height: 12px;
+            background: radial-gradient(#fff, transparent 70%);
+            border-radius: 50%;
+        }
+        .p0 { left: 12%; }
+        .p1 { left: 50%; }
+        .p2 { left: 88%; }
+        .base {
+            width: 200px;
+            height: 22px;
+            position: absolute;
+            bottom: 40px;
+            border-radius: 8px;
+            transform: translateX(-50%);
+            background: linear-gradient(to bottom, #999, #333);
+        }
+        .b0 { left: 12%; }
+        .b1 { left: 50%; }
+        .b2 { left: 88%; }
+
+        /* 圆盘高光+升降动画 */
+        .disk {
+            height: 30px;
+            border-radius: 15px;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 5px 15px #0005;
+        }
+        .disk::after {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 10%;
+            width: 80%;
+            height: 8px;
+            background: linear-gradient(to bottom, #ffffffaa, transparent);
+            border-radius: 10px;
+        }
+        .disk.selected {
+            transform: translateX(-50%) translateY(-15px);
+            box-shadow: 0 0 25px 6px #ffeb3b;
+        }
+
+        /* 违规红光警告 */
+        @keyframes warnRedGlow {
+            0%,100%{box-shadow: 0 0 10px 3px #f00, 0 0 20px 6px #f00;}
+            50%{box-shadow: 0 0 25px 10px #ff2222, 0 0 50px 20px #ff5555, 0 0 70px 30px #ff8888;}
+        }
+        .disk.warn-red {
+            animation: warnRedGlow 0.6s ease;
+        }
+
+        /* 通关庆祝动画 */
+        @keyframes celebrateWin {
+            0%{transform: scale(1) rotate(0deg);}
+            25%{transform: scale(1.1) rotate(3deg);}
+            50%{transform: scale(1.15) rotate(0deg);}
+            75%{transform: scale(1.1) rotate(-3deg);}
+            100%{transform: scale(1) rotate(0deg);}
+        }
+        .win-celebrate {
+            animation: celebrateWin 0.8s ease infinite;
+        }
+        .tip {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <h1>汉诺塔 终极整合版</h1>
+    <div class="control-box">
+        <div class="info">步数：<span id="moveCount">0</span></div>
+        <select id="diskNum">
+            <option value="3">3个圆盘</option>
+            <option value="4">4个圆盘</option>
+            <option value="5" selected>5个圆盘</option>
+            <option value="6">6个圆盘</option>
+            <option value="7">7个圆盘</option>
+            <option value="8">8个圆盘</option>
+        </select>
+        <button id="resetBtn">重置</button>
+        <button id="undoBtn">撤销上一步</button>
+        <button id="autoBtn">自动求解</button>
+    </div>
+
+    <div class="game-container">
+        <div class="tower-wrap">
+            <div class="click-zone z0" data-idx="0"></div>
+            <div class="click-zone z1" data-idx="1"></div>
+            <div class="click-zone z2" data-idx="2"></div>
+            <div class="base b0"></div>
+            <div class="base b1"></div>
+            <div class="base b2"></div>
+            <div class="peg p0"></div>
+            <div class="peg p1"></div>
+            <div class="peg p2"></div>
+        </div>
+    </div>
+    <div class="tip">🔊 先点一下页面解锁声音 | 违规=红光闪烁 ✨ | 可撤销 | 自动求解</div>
+
+    <script>
+        // 音效（基础数据格式，兼容所有浏览器）
+        let audioSelect, audioPut, audioError, audioWin;
+        let soundUnlocked = false;
+
+        // 用户点一下页面，解锁声音（浏览器规则）
+        function unlockSound() {
+            if (soundUnlocked) return;
+            audioSelect = new Audio('data:audio/wav;base64,UklGRiIAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA==');
+            audioPut = new Audio('data:audio/wav;base64,UklGRiIAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA==');
+            audioError = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU9vT19AAAAA');
+            audioWin = new Audio('data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU9vT19AAAAA');
+            soundUnlocked = true;
+            document.removeEventListener('click', unlockSound);
+        }
+        document.addEventListener('click', unlockSound);
+
+        function playSound(sound) {
+            if (!soundUnlocked) return;
+            sound.currentTime = 0;
+            sound.play().catch(e=>{});
+        }
+
+        let diskCount = 5;
+        let pegs = [[],[],[]];
+        let moveStep = 0;
+        let isAuto = false;
+        let selectedFrom = null;
+        let history = [];
+
+        const moveCountDom = document.getElementById('moveCount');
+        const diskNumSel = document.getElementById('diskNum');
+        const resetBtn = document.getElementById('resetBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const autoBtn = document.getElementById('autoBtn');
+        const clickZones = document.querySelectorAll('.click-zone');
+
+        const diskColors = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#9b59b6','#e67e22','#1abc9c','#34495e'];
+
+        function delay(ms){return new Promise(res=>setTimeout(res,ms));}
+        function saveHistory(){
+            history.push({pegs:JSON.parse(JSON.stringify(pegs)),step:moveStep});
+            undoBtn.disabled = false;
+        }
+        function undoMove(){
+            if(history.length<=0)return;
+            let last = history.pop();
+            pegs = last.pegs;
+            moveStep = last.step;
+            updateMoveText();
+            renderDisks();
+            if(history.length===0)undoBtn.disabled=true;
+        }
+        function initGame(){
+            diskCount = parseInt(diskNumSel.value);
+            moveStep=0;isAuto=false;selectedFrom=null;history=[];
+            undoBtn.disabled=true;pegs=[[],[],[]];
+            document.querySelectorAll('.disk').forEach(d=>d.remove());
+            for(let i=diskCount;i>=1;i--)pegs[0].push(i);
+            renderDisks();updateMoveText();
+        }
+        function renderDisks(){
+            document.querySelectorAll('.disk').forEach(d=>d.remove());
+            let pos = ["12%","50%","88%"];
+            for(let i=0;i<3;i++){
+                pegs[i].forEach((size,idx)=>{
+                    let disk = document.createElement('div');
+                    disk.className="disk";
+                    disk.style.left=pos[i];
+                    disk.style.width=(60+size*18)+"px";
+                    disk.style.bottom=(40+idx*32)+"px";
+                    disk.style.background=diskColors[size-1];
+                    disk.dataset.tower=i;
+                    disk.onclick=e=>{
+                        e.stopPropagation();
+                        if(isAuto)return;
+                        selectedFrom=i;
+                        clearDisk();
+                        disk.classList.add("selected");
+                        playSound(audioSelect);
+                    }
+                    document.querySelector('.tower-wrap').appendChild(disk);
+                })
+            }
+        }
+        clickZones.forEach(zone=>{
+            zone.onclick=function(){
+                if(isAuto||selectedFrom===null)return;
+                let t = parseInt(this.dataset.idx);
+                moveDisk(selectedFrom,t);
+                selectedFrom=null;
+                clearDisk();
+            }
+        })
+        function clearDisk(){
+            document.querySelectorAll('.disk').forEach(d=>d.classList.remove('selected','warn-red'));
+        }
+        function moveDisk(from,to){
+            if(from===to)return;
+            let topF = pegs[from].at(-1);
+            let topT = pegs[to].at(-1);
+            if(topT&&topF>topT){
+                let d = getTopDisk(from);
+                if(d){
+                    d.classList.add("warn-red");
+                    playSound(audioError);
+                    setTimeout(()=>d.classList.remove("warn-red"),600);
+                }
+                return;
+            }
+            saveHistory();
+            pegs[to].push(pegs[from].pop());
+            moveStep++;
+            playSound(audioPut);
+            updateMoveText();
+            renderDisks();
+            checkWin();
+        }
+        function getTopDisk(idx){
+            let arr = Array.from(document.querySelectorAll(`.disk[data-tower="${idx}"]`));
+            return arr[arr.length-1];
+        }
+        function updateMoveText(){moveCountDom.innerText=moveStep;}
+        function checkWin(){
+            if(pegs[2].length===diskCount){
+                setTimeout(()=>{
+                    document.querySelectorAll('.disk').forEach(d=>d.classList.add("win-celebrate"));
+                    playSound(audioWin);
+                },300)
+            }
+        }
+        async function hanoi(n,a,b,c){
+            if(n===0)return;
+            await hanoi(n-1,a,c,b);
+            await delay(600);
+            saveHistory();
+            pegs[c].push(pegs[a].pop());
+            moveStep++;
+            updateMoveText();renderDisks();checkWin();
+            await hanoi(n-1,b,a,c);
+        }
+        async function autoRun(){
+            if(isAuto)return;
+            isAuto=true;initGame();
+            await delay(300);
+            await hanoi(diskCount,0,1,2);
+            isAuto=false;
+        }
+        resetBtn.onclick=initGame;
+        undoBtn.onclick=undoMove;
+        autoBtn.onclick=autoRun;
+        diskNumSel.onchange=initGame;
+        window.onload=initGame;
+    </script>
+</body>
+</html>
